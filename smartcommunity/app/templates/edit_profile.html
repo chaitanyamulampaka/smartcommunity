@@ -1,0 +1,45 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Profile</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+
+<div class="w-full max-w-md bg-white rounded-2xl shadow-lg p-8">
+    <h2 class="text-2xl font-bold text-center mb-6">Edit Profile</h2>
+
+    <form method="POST" enctype="multipart/form-data" class="space-y-4">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+
+        <!-- Profile Image -->
+        <div>
+            <label class="block text-sm font-medium">Profile Picture</label>
+            {{ form.profile_image }}
+        </div>
+
+        <!-- Bio -->
+        <div>
+            <label class="block text-sm font-medium">Bio</label>
+            {{ form.bio }}
+        </div>
+
+        <button type="submit" class="w-full py-2 px-4 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700">
+            Update Profile
+        </button>
+    </form>
+
+    {% if messages %}
+        <div class="mt-4">
+            {% for message in messages %}
+                <p class="text-green-500 text-sm">{{ message }}</p>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+
+</body>
+</html>
