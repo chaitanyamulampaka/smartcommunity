@@ -1,0 +1,114 @@
+{% load static %}
+
+{% load socialaccount %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+    <!-- Tailwind CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'index.css' %}">
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 min-h-screen flex items-center justify-center">
+
+    <!-- Centered Card -->
+    <div class="w-full max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 space-y-8">
+
+        <!-- Title -->
+        <h3 class="text-2xl font-bold text-center text-gray-900 dark:text-white">
+            Sign In
+        </h3>
+
+        <!-- Django Form -->
+        <form class="space-y-6" method="POST" action="{% url 'signin' %}">
+            {% csrf_token %}
+
+            <!-- Email -->
+            <div>
+                <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Email address
+                </label>
+                <input id="email" name="email" type="email" autocomplete="email" required
+                       class="mt-1 block w-full px-4 py-3 rounded-lg border border-gray-300 
+                              dark:border-gray-600 bg-gray-50 dark:bg-gray-700 
+                              focus:ring-indigo-500 focus:border-indigo-500 
+                              text-gray-900 dark:text-white placeholder-gray-400">
+            </div>
+
+            <!-- Password -->
+            <div>
+                <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Password
+                </label>
+                <input id="password" name="password" type="password" autocomplete="current-password" required
+                       class="mt-1 block w-full px-4 py-3 rounded-lg border border-gray-300 
+                              dark:border-gray-600 bg-gray-50 dark:bg-gray-700 
+                              focus:ring-indigo-500 focus:border-indigo-500 
+                              text-gray-900 dark:text-white placeholder-gray-400">
+            </div>
+
+            <!-- Remember + Forgot -->
+            <div class="flex items-center justify-between text-sm">
+                <label class="flex items-center">
+                    <input id="remember-me" name="remember-me" type="checkbox"
+                           class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                    <span class="ml-2 text-gray-700 dark:text-gray-300">Remember me</span>
+                </label>
+                <a href="#" class="font-medium text-indigo-600 hover:text-indigo-800 dark:hover:text-indigo-400 transition">
+                    Forgot your password?
+                </a>
+            </div>
+
+            <!-- Submit -->
+            <button type="submit" 
+                    class="w-full py-3 px-4 rounded-lg text-sm font-medium text-white 
+                           bg-gradient-to-r from-blue-500 to-indigo-600 
+                           hover:from-indigo-600 hover:to-purple-600 
+                           shadow-md transition-all duration-300">
+                Sign in
+            </button>
+        </form>
+
+        <!-- Divider -->
+        <div class="relative">
+            <div class="absolute inset-0 flex items-center">
+                <div class="w-full border-t border-gray-300 dark:border-gray-600"></div>
+            </div>
+            <div class="relative flex justify-center text-sm">
+                <span class="px-2 bg-white dark:bg-gray-800 text-gray-500">Or continue with</span>
+            </div>
+        </div>
+
+        <!-- Quick Access Buttons -->
+        <div class="grid gap-4">
+            <a  href="{% provider_login_url 'github' %}" type="button" class="w-full inline-flex justify-center items-center px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-white dark:bg-gray-700 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition">
+                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483..."/></svg>
+                Continue with GitHub
+            </a>
+            <a  href="{% provider_login_url 'google' %}" type="button" class="w-full inline-flex justify-center items-center px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-white dark:bg-gray-700 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition">
+                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M12.48 10.92v3.28h7.84c-.24 1.84-.94 3.48..."/></svg>
+                Continue with Google
+            </a>
+        </div>
+
+        <!-- Terms -->
+        <p class="text-xs text-center text-gray-500 dark:text-gray-400">
+            By signing in, you agree to our 
+            <a href="#" class="font-medium text-indigo-600 hover:text-indigo-800 dark:hover:text-indigo-400 transition">Terms of Service</a> 
+            and 
+            <a href="#" class="font-medium text-indigo-600 hover:text-indigo-800 dark:hover:text-indigo-400 transition">Privacy Policy</a>.
+        </p>
+
+        <!-- Django messages -->
+        {% if messages %}
+            <div class="mt-4 text-center">
+                {% for message in messages %}
+                    <p class="text-red-500 text-sm">{{ message }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>

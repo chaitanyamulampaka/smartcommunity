@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth dark">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Search Results • SmartCommunity</title>
+	<script src="https://cdn.tailwindcss.com"></script>
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+	<style>
+		:root {
+			--bg: #f7f8fb;
+			--card: rgba(255,255,255,0.85);
+			--border: rgba(15,23,42,0.08);
+			--text: #0f172a;
+			--muted: #6b7280;
+			--accent1: #3b82f6;
+			--accent2: #8b5cf6;
+			--accent3: #14b8a6;
+		}
+		.dark {
+			--bg: #0f172a;
+			--card: rgba(15,23,42,0.7);
+			--border: rgba(255,255,255,0.08);
+			--text: #e2e8f0;
+			--muted: #94a3b8;
+		}
+		body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); }
+		.glass {
+			background: var(--card);
+			backdrop-filter: blur(10px);
+			-webkit-backdrop-filter: blur(10px);
+			border: 1px solid var(--border);
+		}
+		.card-hover { transition: transform .2s ease, box-shadow .2s ease; }
+		.card-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(0,0,0,.08); }
+		.btn-brand { background: linear-gradient(90deg, var(--accent1), var(--accent2)); }
+		.btn-brand:hover { filter: brightness(1.05); transform: translateY(-1px); }
+		.toggle { transition: background .2s ease, transform .2s ease; }
+		.fade-in { animation: fade .3s ease; }
+		@keyframes fade { from { opacity: 0; transform: translateY(6px);} to { opacity: 1; transform: translateY(0);} }
+		.like-btn { transition: all .2s ease; }
+		.like-btn:hover { transform: scale(1.1); }
+		.like-btn.liked { animation: heartBeat .3s ease; }
+		@keyframes heartBeat { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.2); } }
+		.save-btn { transition: all .2s ease; }
+		.save-btn:hover { transform: scale(1.1); }
+		.save-btn.saved { animation: bounce .3s ease; }
+		@keyframes bounce { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+		.comment-btn { transition: all .2s ease; }
+		.comment-btn:hover { transform: scale(1.05); }
+		.thread-card { transition: all .3s ease; }
+		.thread-card:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0,0,0,.1); }
+		.gradient-text { background: linear-gradient(90deg, var(--accent1), var(--accent2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+		.tab-active { background: linear-gradient(135deg, var(--accent1), var(--accent2)); color: white; }
+	</style>
+</head>
+<body class="min-h-screen">
+	<!-- Top Nav -->
+	<nav class="glass sticky top-0 z-50 px-4 sm:px-6 py-3">
+		<div class="max-w-7xl mx-auto flex items-center gap-3 sm:gap-6">
+			<div class="flex items-center gap-2 shrink-0">
+				<div class="w-9 h-9 rounded-full flex items-center justify-center" style="background: linear-gradient(135deg, var(--accent1), var(--accent2));">
+					<svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+						<path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+					</svg>
+				</div>
+				<div class="hidden sm:block font-bold gradient-text">SmartCommunity</div>
+			</div>
+			<!-- Search -->
+			<div class="flex-1 hidden md:block">
+				<form method="get" action="{% url 'search_threads' %}" class="glass rounded-full px-4 py-2 flex items-center gap-2">
+					<svg class="w-5 h-5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M10 18a8 8 0 100-16 8 8 0 000 16z"/></svg>
+					<input name="q" value="{{ query }}" class="bg-transparent outline-none w-full placeholder:opacity-60" placeholder="Search threads, tags, users..." />
+					<button type="submit" class="opacity-60 hover:opacity-100">
+						<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+					</button>
+				</form>
+			</div>
+			<div class="ml-auto flex items-center gap-2 sm:gap-3">
+				<a href="{% url 'newthreads' %}" class="glass rounded-full px-4 py-2 text-sm font-medium hover:opacity-80 transition-opacity">
+					<svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+					</svg>
+					Back to Threads
+				</a>
+				<div class="glass rounded-full p-1">
+					<img src="{{ request.user.profile.profile_image.url|default:'' }}" alt="avatar" class="w-8 h-8 rounded-full object-cover" />
+				</div>
+			</div>
+		</div>
+	</nav>
+
+	<!-- Layout -->
+	<main class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+		<!-- Header -->
+		<div class="glass rounded-2xl p-6 mb-6">
+			<div class="flex items-center gap-3 mb-4">
+				<div class="w-12 h-12 rounded-full flex items-center justify-center" style="background: linear-gradient(135deg, var(--accent1), var(--accent2));">
+					<svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M10 18a8 8 0 100-16 8 8 0 000 16z"/>
+					</svg>
+				</div>
+				<div>
+					<h1 class="text-2xl font-bold gradient-text">Search Results</h1>
+					<p class="text-sm opacity-60">
+						{% if query %}
+							Results for "{{ query }}"
+						{% else %}
+							Enter a search term above
+						{% endif %}
+					</p>
+				</div>
+			</div>
+		</div>
+
+		{% if query %}
+		<!-- Search Tabs -->
+		<div class="glass rounded-2xl p-2 mb-6">
+			<div class="flex gap-2">
+				<a href="?q={{ query }}&type=all" class="flex-1 text-center py-3 px-4 rounded-xl font-medium transition-all {% if search_type == 'all' %}tab-active{% else %}hover:opacity-80{% endif %}">
+					All
+				</a>
+				<a href="?q={{ query }}&type=threads" class="flex-1 text-center py-3 px-4 rounded-xl font-medium transition-all {% if search_type == 'threads' %}tab-active{% else %}hover:opacity-80{% endif %}">
+					Threads ({{ results.threads|length }})
+				</a>
+				<a href="?q={{ query }}&type=users" class="flex-1 text-center py-3 px-4 rounded-xl font-medium transition-all {% if search_type == 'users' %}tab-active{% else %}hover:opacity-80{% endif %}">
+					Users ({{ results.users|length }})
+				</a>
+				<a href="?q={{ query }}&type=tags" class="flex-1 text-center py-3 px-4 rounded-xl font-medium transition-all {% if search_type == 'tags' %}tab-active{% else %}hover:opacity-80{% endif %}">
+					Tags ({{ results.tags|length }})
+				</a>
+			</div>
+		</div>
+
+		<!-- Results -->
+		{% if search_type == 'all' or search_type == 'threads' %}
+		{% if results.threads %}
+		<div class="mb-8">
+			<h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+				<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h10M7 11h8M7 15h6"/>
+				</svg>
+				Threads
+			</h2>
+			<div class="space-y-6">
+				{% for th in results.threads %}
+				<div class="glass rounded-2xl p-5 sm:p-6 thread-card fade-in">
+					<div class="flex items-start gap-4">
+						<div class="relative">
+							<img src="{{ th.author.profile.profile_image.url }}" class="w-12 h-12 rounded-full object-cover border-2 border-white shadow-lg" />
+							<div class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-green-500 border-2 border-white"></div>
+						</div>
+						<div class="flex-1 min-w-0">
+							<div class="flex items-center justify-between mb-3">
+								<div class="flex items-center gap-3">
+									<div>
+										<div class="font-semibold text-lg">{{ th.author.get_full_name|default:th.author.username }}</div>
+										<div class="text-sm opacity-60 flex items-center gap-2">
+											<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+												<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+											</svg>
+											{{ th.created_at|timesince }} ago
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="prose prose-sm max-w-none">
+								<p class="text-[16px] leading-relaxed mb-4">{{ th.content|truncatewords:50 }}</p>
+							</div>
+							{% if th.tags.all %}
+							<div class="mb-4 flex flex-wrap gap-2">
+								{% for tag in th.tags.all %}
+								<span class="glass px-3 py-1 rounded-full text-sm font-medium" style="background: linear-gradient(135deg, var(--accent1), var(--accent2)); color: white;">#{{ tag.name }}</span>
+								{% endfor %}
+							</div>
+							{% endif %}
+							<div class="flex items-center gap-6 text-sm">
+								<span class="flex items-center gap-2">
+									<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+									</svg>
+									<span class="font-medium">{{ th.like_count }}</span>
+								</span>
+								<span class="flex items-center gap-2">
+									<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+									</svg>
+									<span class="font-medium">{{ th.comment_count }}</span>
+								</span>
+							</div>
+						</div>
+					</div>
+				</div>
+				{% endfor %}
+			</div>
+		</div>
+		{% endif %}
+		{% endif %}
+
+		{% if search_type == 'all' or search_type == 'users' %}
+		{% if results.users %}
+		<div class="mb-8">
+			<h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+				<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+				</svg>
+				Users
+			</h2>
+			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+				{% for user in results.users %}
+				<div class="glass rounded-2xl p-4 card-hover">
+					<div class="flex items-center gap-3">
+						<div class="relative">
+							<img src="{{ user.profile.profile_image.url }}" class="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm" />
+							<div class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-green-500 border-2 border-white"></div>
+						</div>
+						<div class="flex-1 min-w-0">
+							<div class="font-semibold truncate">{{ user.get_full_name|default:user.username }}</div>
+							<div class="text-sm opacity-60 truncate">@{{ user.username }}</div>
+						</div>
+						<a href="{% url 'follow_toggle' user.id %}" class="glass rounded-full px-3 py-1.5 text-sm font-medium hover:scale-105 transition-transform" style="background: linear-gradient(135deg, var(--accent1), var(--accent2)); color: white;">
+							Follow
+						</a>
+					</div>
+				</div>
+				{% endfor %}
+			</div>
+		</div>
+		{% endif %}
+		{% endif %}
+
+		{% if search_type == 'all' or search_type == 'tags' %}
+		{% if results.tags %}
+		<div class="mb-8">
+			<h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+				<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h10M7 11h8M7 15h6"/>
+				</svg>
+				Tags
+			</h2>
+			<div class="flex flex-wrap gap-3">
+				{% for tag in results.tags %}
+				<a href="{% url 'tag_threads' tag.name %}" class="glass px-4 py-2 rounded-full text-sm font-medium hover:scale-105 transition-transform" style="background: linear-gradient(135deg, var(--accent1), var(--accent2)); color: white;">
+					#{{ tag.name }}
+				</a>
+				{% endfor %}
+			</div>
+		</div>
+		{% endif %}
+		{% endif %}
+
+		<!-- No Results -->
+		{% if not results.threads and not results.users and not results.tags %}
+		<div class="glass rounded-2xl p-12 text-center">
+			<svg class="w-24 h-24 mx-auto mb-6 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M10 18a8 8 0 100-16 8 8 0 000 16z"/>
+			</svg>
+			<h3 class="text-xl font-semibold mb-2">No results found</h3>
+			<p class="text-sm opacity-60 mb-6">Try searching with different keywords</p>
+			<a href="{% url 'threads' %}" class="btn-brand text-white rounded-full px-6 py-3 font-medium">
+				<svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+				</svg>
+				Browse Threads
+			</a>
+		</div>
+		{% endif %}
+		{% else %}
+		<!-- Empty State -->
+		<div class="glass rounded-2xl p-12 text-center">
+			<svg class="w-24 h-24 mx-auto mb-6 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M10 18a8 8 0 100-16 8 8 0 000 16z"/>
+			</svg>
+			<h3 class="text-xl font-semibold mb-2">Search for content</h3>
+			<p class="text-sm opacity-60 mb-6">Enter a search term in the search bar above</p>
+		</div>
+		{% endif %}
+	</main>
+</body>
+</html>
