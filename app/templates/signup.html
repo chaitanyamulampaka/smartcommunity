@@ -1,0 +1,124 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Signup</title>
+    <!-- Tailwind CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Your custom CSS -->
+    <link rel="stylesheet" href="{% static 'index.css' %}">
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 min-h-screen flex items-center justify-center">
+
+    <!-- Centered Signup Card -->
+    <div class="w-full max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8">
+        <h3 class="text-2xl font-bold text-center text-gray-900 dark:text-white mb-6">
+            Create Account
+        </h3>
+
+        <!-- Django Integrated Signup Form -->
+        <form class="space-y-6" method="POST" action="{% url 'signup' %}">
+            {% csrf_token %}
+
+            <!-- First Name -->
+            <div>
+                <label for="first_name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    First Name
+                </label>
+                <input id="first_name" name="first_name" type="text" required
+                       class="mt-1 block w-full px-4 py-3 rounded-lg border border-gray-300 
+                              dark:border-gray-600 bg-gray-50 dark:bg-gray-700 
+                              focus:ring-indigo-500 focus:border-indigo-500 
+                              text-gray-900 dark:text-white placeholder-gray-400">
+            </div>
+
+            <!-- Last Name -->
+            <div>
+                <label for="last_name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Last Name
+                </label>
+                <input id="last_name" name="last_name" type="text" required
+                       class="mt-1 block w-full px-4 py-3 rounded-lg border border-gray-300 
+                              dark:border-gray-600 bg-gray-50 dark:bg-gray-700 
+                              focus:ring-indigo-500 focus:border-indigo-500 
+                              text-gray-900 dark:text-white placeholder-gray-400">
+            </div>
+
+            <!-- Username -->
+            <div>
+                <label for="username" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Username
+                </label>
+                <input id="username" name="username" type="text" required
+                       class="mt-1 block w-full px-4 py-3 rounded-lg border border-gray-300 
+                              dark:border-gray-600 bg-gray-50 dark:bg-gray-700 
+                              focus:ring-indigo-500 focus:border-indigo-500 
+                              text-gray-900 dark:text-white placeholder-gray-400">
+            </div>
+
+            <!-- Email -->
+            <div>
+                <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Email address
+                </label>
+                <input id="email" name="email" type="email" required
+                       class="mt-1 block w-full px-4 py-3 rounded-lg border border-gray-300 
+                              dark:border-gray-600 bg-gray-50 dark:bg-gray-700 
+                              focus:ring-indigo-500 focus:border-indigo-500 
+                              text-gray-900 dark:text-white placeholder-gray-400">
+            </div>
+
+            <!-- Password -->
+            <div>
+                <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Password
+                </label>
+                <input id="password" name="password" type="password" required
+                       class="mt-1 block w-full px-4 py-3 rounded-lg border border-gray-300 
+                              dark:border-gray-600 bg-gray-50 dark:bg-gray-700 
+                              focus:ring-indigo-500 focus:border-indigo-500 
+                              text-gray-900 dark:text-white placeholder-gray-400">
+            </div>
+
+            <!-- Confirm Password -->
+            <div>
+                <label for="confirm_password" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Confirm Password
+                </label>
+                <input id="confirm_password" name="confirm_password" type="password" required
+                       class="mt-1 block w-full px-4 py-3 rounded-lg border border-gray-300 
+                              dark:border-gray-600 bg-gray-50 dark:bg-gray-700 
+                              focus:ring-indigo-500 focus:border-indigo-500 
+                              text-gray-900 dark:text-white placeholder-gray-400">
+            </div>
+
+            <!-- Submit -->
+            <button type="submit"
+                    class="w-full py-3 px-4 rounded-lg text-sm font-medium text-white 
+                           bg-gradient-to-r from-blue-500 to-indigo-600 
+                           hover:from-indigo-600 hover:to-purple-600 
+                           shadow-md transition-all duration-300">
+                Sign Up
+            </button>
+        </form>
+
+        <!-- Link to Login -->
+        <p class="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
+            Already have an account?
+            <a href="{% url 'signin' %}" class="font-medium text-indigo-600 hover:text-indigo-800 dark:hover:text-indigo-400 transition">
+                Sign in
+            </a>
+        </p>
+
+        <!-- Django messages -->
+        {% if messages %}
+            <div class="mt-4 text-center">
+                {% for message in messages %}
+                    <p class="text-red-500 text-sm">{{ message }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>

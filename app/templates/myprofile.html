@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Community Profile</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            color: #e2e8f0;
+        }
+        .glassmorphism {
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .gradient-text {
+            background: linear-gradient(90deg, #3b82f6, #6366f1, #8b5cf6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .avatar-glow {
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.7);
+        }
+        .btn-glow {
+            box-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
+        }
+        .btn-glow:hover {
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.7);
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(99, 102, 241, 0.2);
+        }
+        .online-indicator {
+            box-shadow: 0 0 10px rgba(74, 222, 128, 0.7);
+        }
+        h1, h2, h3 {
+            font-family: 'Playfair Display', serif;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <!-- Sticky Navbar -->
+    <nav class="glassmorphism sticky top-0 z-50 py-4 px-6">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <div class="w-10 h-10 rounded-full gradient-bg"></div>
+                <span class="text-xl font-bold gradient-text">SmartCommunity</span>
+            </div>
+            <div class="hidden md:flex space-x-6">
+                <a href="#" class="hover:text-indigo-300 transition">Home</a>
+                <a href="#" class="hover:text-indigo-300 transition">Categories</a>
+                <a href="#" class="hover:text-indigo-300 transition">Leaderboard</a>
+                <a href="#" class="hover:text-indigo-300 transition">About</a>
+                <a href="{% url 'signout' %}" class="hover:text-indigo-300 transition">Logout</a>
+            </div>
+            <button class="md:hidden">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Profile Header -->
+    <header class="relative">
+        <div class="h-64 w-full bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-600"></div>
+        <div class="max-w-7xl mx-auto px-6 pb-12">
+            <div class="flex flex-col md:flex-row items-center md:items-end -mt-16 relative">
+                <div class="relative">
+                    <img src="{{ user.profile.profile_image.url }}" alt="Profile Picture" width="100" class="w-32 h-32 rounded-full border-4 border-indigo-500 avatar-glow">
+                    <div class="absolute bottom-2 right-2 w-4 h-4 bg-green-500 rounded-full online-indicator"></div>
+                </div>
+                <div class="md:ml-8 mt-4 md:mt-0 text-center md:text-left">
+                    <h1 class="text-3xl font-bold">{{ user.first_name }}</h1>
+                    <p class="text-gray-300">@{{ user.username|lower }}</p>
+                    <p class="text-gray-400 mt-2 max-w-md">{{ user.profile.bio }}</p>
+                    <div class="flex items-center gap-4 mt-3 text-sm text-gray-300">
+                        <a href="{% url 'followers_list' user.id %}" class="hover:text-indigo-300">
+                            <span class="font-semibold">{{ user.profile.follower_count }}</span> Followers
+                        </a>
+                        <a href="{% url 'following_list' user.id %}" class="hover:text-indigo-300">
+                            <span class="font-semibold">{{ user.profile.following_count }}</span> Following
+                        </a>
+                    </div>
+
+                    <div class="flex space-x-4 mt-6 justify-center md:justify-start">
+                        <a href="{% url 'edit_profile' %}" class="btn-glow bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-full font-medium transition-all">
+                            Edit Profile
+                        </a>
+                        {% if request.user != user %}
+                        <a href="{% url 'follow_toggle' user.id %}" class="border border-indigo-400 text-indigo-300 hover:bg-indigo-900/30 px-6 py-2 rounded-full font-medium transition-all">
+                            {% if request.user in user.profile.followers.all %}Unfollow{% else %}Follow{% endif %}
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- User Stats -->
+    <section class="max-w-7xl mx-auto px-6 mb-12">
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <!-- Stat Cards -->
+            <div class="stat-card glassmorphism p-6 rounded-xl transition-all duration-300">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-indigo-900/30">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-gray-400 text-sm">Posts</p>
+                        <p class="text-2xl font-bold">{{post_count}}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="stat-card glassmorphism p-6 rounded-xl transition-all duration-300">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-indigo-900/30">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                        </svg>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-gray-400 text-sm">Replies</p>
+                        <p class="text-2xl font-bold">{{reply_count}}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="stat-card glassmorphism p-6 rounded-xl transition-all duration-300">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-indigo-900/30">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                        </svg>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-gray-400 text-sm">Badges</p>
+                        <p class="text-2xl font-bold">{{ badges|length }}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="stat-card glassmorphism p-6 rounded-xl transition-all duration-300">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-indigo-900/30">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                        </svg>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-gray-400 text-sm">Points</p>
+                        <p class="text-2xl font-bold">{{ points }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    </section>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+        <!-- Activity Feed -->
+        <section class="lg:col-span-2">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold">Recent Activity</h2>
+                <button class="text-indigo-400 hover:text-indigo-300">View All</button>
+            </div>
+            
+            {# filepath: d:\smart_community\smartcommunity\app\templates\myprofile.html #}
+<!-- ...existing code... -->
+<div class="space-y-4">
+    {% for thread in threads %}
+    <div class="glassmorphism p-6 rounded-xl">
+        <div class="flex items-start">
+            <img src="{{ thread.author.profile.profile_image.url }}" alt="User avatar" class="w-10 h-10 rounded-full mr-4">
+            <div>
+                <div class="flex items-center">
+                    <h3 class="font-bold text-lg">{{ thread.title|default:"Untitled Thread" }}</h3>
+                    {% for tag in thread.tags.all %}
+                        <span class="ml-2 px-2 py-1 text-xs rounded-full bg-indigo-900/30 text-indigo-300">{{ tag.name }}</span>
+                    {% endfor %}
+                </div>
+                <p class="text-gray-400 mt-1">{{ thread.content|truncatewords:20 }}</p>
+                <div class="flex items-center mt-3 text-sm text-gray-500">
+                    <span>{{ thread.created_at|timesince }} ago</span>
+                    <span class="mx-2">•</span>
+                    <span>{{ thread.reply_count }} replies</span>
+                    <span class="mx-2">•</span>
+                    <span>{{ thread.view_count }} views</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="glassmorphism p-6 rounded-xl text-center text-gray-400">
+        No recent activity yet.
+    </div>
+    {% endfor %}
+</div>
+<!-- ...existing code... -->
+        </section>
+
+        <!-- Right Sidebar -->
+        <aside>
+            <!-- Badges & Achievements -->
+            <section class="glassmorphism p-6 rounded-xl mb-8">
+                <h2 class="text-xl font-bold mb-4">Badges & Achievements</h2>
+                <div class="grid grid-cols-3 gap-3">
+                    {% for badge in badges %}
+                    <div class="relative group">
+                        <div class="w-full rounded-full mb-1 bg-indigo-900/40 h-14 flex items-center justify-center text-xs">
+                            🏅
+                        </div>
+                        <div class="absolute inset-0 bg-indigo-600 rounded-full opacity-0 group-hover:opacity-70 transition-opacity flex items-center justify-center">
+                            <span class="text-xs text-center px-1">{{ badge.name }}</span>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="col-span-3 text-center text-gray-400">No badges yet</div>
+                    {% endfor %}
+                </div>
+                <div class="mt-4 text-sm text-gray-400 text-center">Keep engaging to unlock badges</div>
+            </section>
+
+            <!-- Leaderboard Position -->
+            <section class="glassmorphism p-6 rounded-xl mb-8">
+                <h2 class="text-xl font-bold mb-4">Leaderboard Position</h2>
+                <div class="flex items-center justify-between mb-2">
+                    <span>Your Rank:</span>
+                    <span class="text-xl font-bold gradient-text">#7</span>
+                </div>
+                <div class="flex items-center justify-between mb-4">
+                    <span>Top 10% of Users</span>
+                    <span class="text-indigo-400">↑ 2 ranks</span>
+                </div>
+                <div class="w-full bg-gray-800 rounded-full h-2.5">
+                    <div class="bg-gradient-to-r from-blue-500 to-indigo-600 h-2.5 rounded-full" style="width: 93%"></div>
+                </div>
+                <p class="text-xs text-gray-400 mt-2">Points to next rank: 276</p>
+            </section>
+
+            <!-- User Suggestions -->
+            <section class="glassmorphism p-6 rounded-xl mb-8">
+                <h2 class="text-xl font-bold mb-4">Suggested Users</h2>
+                <div class="space-y-4">
+                    {% for user in suggested_users %}
+                    <div class="flex items-center justify-between p-3 rounded-xl bg-indigo-900/30 hover:bg-indigo-900/50 transition-all">
+                        <div class="flex items-center gap-3">
+                            <img src="{{ user.profile.profile_image.url }}" class="w-10 h-10 rounded-full object-cover" alt="{{ user.username }} avatar" />
+                            <div>
+                                <div class="font-medium text-gray-200">{{ user.get_full_name|default:user.username }}</div>
+                                <div class="text-sm text-gray-400">@{{ user.username }}</div>
+                            </div>
+                        </div>
+                        <a href="{% url 'follow_toggle' user.id %}" class="px-3 py-1 rounded-full text-sm border border-indigo-400 text-indigo-300 hover:bg-indigo-900/50 transition-all">
+                            Follow
+                        </a>
+                    </div>
+                    {% empty %}
+                    <div class="text-center text-gray-400 py-4">
+                        <div class="text-2xl mb-2">✨</div>
+                        <div class="text-sm">No suggestions available</div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="mt-4 pt-4 border-t border-indigo-800">
+                    <a href="{% url 'user_suggestions' %}" class="block text-center text-indigo-400 hover:text-indigo-300 font-medium">
+                        View More Suggestions
+                    </a>
+                </div>
+            </section>
+
+            <!-- Recommendations -->
+            <section class="glassmorphism p-6 rounded-xl">
+                <h2 class="text-xl font-bold mb-4">AI Recommendations</h2>
+                <div class="flex overflow-x-auto pb-2 space-x-4">
+                    <!-- Recommendation Card -->
+                    <div class="flex-shrink-0 w-48 bg-indigo-900/30 rounded-lg p-4 border border-indigo-800">
+                        <h3 class="font-bold mb-2">Decentralized Governance</h3>
+                        <p class="text-xs text-gray-400 mb-3">Exploring blockchain-based community decision making...</p>
+                        <span class="inline-block px-2 py-1 text-xs rounded-full bg-indigo-900/50 text-indigo-300">Governance</span>
+                    </div>
+                    <!-- Recommendation Card -->
+                    <div class="flex-shrink-0 w-48 bg-indigo-900/30 rounded-lg p-4 border border-indigo-800">
+                        <h3 class="font-bold mb-2">AR Interfaces</h3>
+                        <p class="text-xs text-gray-400 mb-3">Augmented reality for next-gen community platforms...</p>
+                        <span class="inline-block px-2 py-1 texto-xs rounded-full bg-indigo-900/50 text-indigo-300">Technology</span>
+                    </div>
+                </div>
+            </section>
+        </aside>
+    </main>
+
+    <!-- Call to Action -->
+    <section class="max-w-7xl mx-auto px-6 mb-12">
+        <div class="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-8 text-center">
+            <h2 class="text-2xl font-bold mb-3">Engage more to climb the leaderboard and unlock new badges!</h2>
+            <p class="mb-6 text-indigo-100">Your contributions make our community smarter and stronger.</p>
+            <button class="btn-glow bg-white text-indigo-700 hover:bg-indigo-100 px-8 py-3 rounded-full font-bold transition-all">
+                Explore Discussions
+            </button>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 py-12">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-6 md:mb-0">
+                    <div class="flex items-center space-x-2 mb-4">
+                        <div class="w-8 h-8 rounded-full gradient-bg"></div>
+                        <span class="text-lg font-bold gradient-text">SmartCommunity</span>
+                    </div>
+                    <p class="text-gray-400 text-sm">Building the future of AI-powered communities.</p>
+                </div>
+                
+                <div class="grid grid-cols-3 gap-8">
+                    <div>
+                        <h3 class="text-gray-300 font-bold mb-3">Links</h3>
+                        <ul class="space-y-2">
+                            <li><a href="#" class="text-gray-400 hover:text-indigo-300 transition">About</a></li>
+                            <li><a href="#" class="text-gray-400 hover:text-indigo-300 transition">Privacy</a></li>
+                            <li><a href="#" class="text-gray-400 hover:text-indigo-300 transition">Contact</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-gray-300 font-bold mb-3">Legal</h3>
+                        <ul class="space-y-2">
+                            <li><a href="#" class="text-gray-400 hover:text-indigo-300 transition">Terms</a></li>
+                            <li><a href="#" class="text-gray-400 hover:text-indigo-300 transition">Policy</a></li>
+                            <li><a href="#" class="text-gray-400 hover:text-indigo-300 transition">Cookies</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-gray-300 font-bold mb-3">Connect</h3>
+                        <div class="flex space-x-4">
+                            <a href="#">
+                                <img src="https://placehold.co/24" alt="Twitter social media icon" class="w-6 h-6">
+                            </a>
+                            <a href="#">
+                                <img src="https://placehold.co/24" alt="LinkedIn social media icon" class="w-6 h-6">
+                            </a>
+                            <a href="#">
+                                <img src="https://placehold.co/24" alt="GitHub social media icon" class="w-6 h-6">
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-500 text-sm">
+                © 2023 SmartCommunity. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Simple animation on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            const cards = document.querySelectorAll('.stat-card');
+            cards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.classList.add('opacity-100');
+                }, index * 100);
+            });
+        });
+
+        // Toggle mobile menu (simplified for this example)
+        const mobileMenuButton = document.querySelector('button[class="md:hidden"]');
+        mobileMenuButton.addEventListener('click', () => {
+            const navLinks = document.querySelector('.md\\:flex.space-x-6');
+            navLinks.classList.toggle('hidden');
+            navLinks.classList.toggle('flex');
+            navLinks.classList.toggle('flex-col');
+            navLinks.classList.toggle('absolute');
+            navLinks.classList.toggle('top-16');
+            navLinks.classList.toggle('left-0');
+            navLinks.classList.toggle('right-0');
+            navLinks.classList.toggle('bg-gray-900');
+            navLinks.classList.toggle('p-4');
+            navLinks.classList.toggle('space-y-4');
+            navLinks.classList.toggle('space-x-0');
+        });
+    </script>
+</body>
+</html>

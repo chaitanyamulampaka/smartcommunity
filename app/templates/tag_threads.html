@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth dark">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>#{{ tag.name }} • SmartCommunity</title>
+	<script src="https://cdn.tailwindcss.com"></script>
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+	<style>
+		:root {
+			--bg: #f7f8fb;
+			--card: rgba(255,255,255,0.85);
+			--border: rgba(15,23,42,0.08);
+			--text: #0f172a;
+			--muted: #6b7280;
+			--accent1: #3b82f6;
+			--accent2: #8b5cf6;
+			--accent3: #14b8a6;
+		}
+		.dark {
+			--bg: #0f172a;
+			--card: rgba(15,23,42,0.7);
+			--border: rgba(255,255,255,0.08);
+			--text: #e2e8f0;
+			--muted: #94a3b8;
+		}
+		body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); }
+		.glass {
+			background: var(--card);
+			backdrop-filter: blur(10px);
+			-webkit-backdrop-filter: blur(10px);
+			border: 1px solid var(--border);
+		}
+		.card-hover { transition: transform .2s ease, box-shadow .2s ease; }
+		.card-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(0,0,0,.08); }
+		.btn-brand { background: linear-gradient(90deg, var(--accent1), var(--accent2)); }
+		.btn-brand:hover { filter: brightness(1.05); transform: translateY(-1px); }
+		.toggle { transition: background .2s ease, transform .2s ease; }
+		.fade-in { animation: fade .3s ease; }
+		@keyframes fade { from { opacity: 0; transform: translateY(6px);} to { opacity: 1; transform: translateY(0);} }
+		.like-btn { transition: all .2s ease; }
+		.like-btn:hover { transform: scale(1.1); }
+		.like-btn.liked { animation: heartBeat .3s ease; }
+		@keyframes heartBeat { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.2); } }
+		.save-btn { transition: all .2s ease; }
+		.save-btn:hover { transform: scale(1.1); }
+		.save-btn.saved { animation: bounce .3s ease; }
+		@keyframes bounce { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+		.comment-btn { transition: all .2s ease; }
+		.comment-btn:hover { transform: scale(1.05); }
+		.thread-card { transition: all .3s ease; }
+		.thread-card:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0,0,0,.1); }
+		.gradient-text { background: linear-gradient(90deg, var(--accent1), var(--accent2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+	</style>
+</head>
+<body class="min-h-screen">
+	<!-- Top Nav -->
+	<nav class="glass sticky top-0 z-50 px-4 sm:px-6 py-3">
+		<div class="max-w-7xl mx-auto flex items-center gap-3 sm:gap-6">
+			<div class="flex items-center gap-2 shrink-0">
+				<div class="w-9 h-9 rounded-full flex items-center justify-center" style="background: linear-gradient(135deg, var(--accent1), var(--accent2));">
+					<svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+						<path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+					</svg>
+				</div>
+				<div class="hidden sm:block font-bold gradient-text">SmartCommunity</div>
+			</div>
+			<div class="ml-auto flex items-center gap-2 sm:gap-3">
+				<a href="{% url 'threads' %}" class="glass rounded-full px-4 py-2 text-sm font-medium hover:opacity-80 transition-opacity">
+					<svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+					</svg>
+					Back to Threads
+				</a>
+				<div class="glass rounded-full p-1">
+					<img src="{{ request.user.profile.profile_image.url|default:'' }}" alt="avatar" class="w-8 h-8 rounded-full object-cover" />
+				</div>
+			</div>
+		</div>
+	</nav>
+
+	<!-- Layout -->
+	<main class="max-w-4xl mx-auto px-4 sm:px-6 py-6">
+		<!-- Header -->
+		<div class="glass rounded-2xl p-6 mb-6">
+			<div class="flex items-center gap-3 mb-4">
+				<div class="w-12 h-12 rounded-full flex items-center justify-center" style="background: linear-gradient(135deg, var(--accent1), var(--accent2));">
+					<svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h10M7 11h8M7 15h6"/>
+					</svg>
+				</div>
+				<div>
+					<h1 class="text-2xl font-bold gradient-text">#{{ tag.name }}</h1>
+					<p class="text-sm opacity-60">{{ threads.paginator.count }} threads</p>
+				</div>
+			</div>
+		</div>
+
+		<!-- Threads List -->
+		<div class="space-y-6">
+			{% for th in threads %}
+			<div class="glass rounded-2xl p-5 sm:p-6 thread-card fade-in">
+				<div class="flex items-start gap-4">
+					<div class="relative">
+						<img src="{{ th.author.profile.profile_image.url }}" class="w-12 h-12 rounded-full object-cover border-2 border-white shadow-lg" />
+						<div class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-green-500 border-2 border-white"></div>
+					</div>
+					<div class="flex-1 min-w-0">
+						<div class="flex items-center justify-between mb-3">
+							<div class="flex items-center gap-3">
+								<div>
+									<div class="font-semibold text-lg">{{ th.author.get_full_name|default:th.author.username }}</div>
+									<div class="text-sm opacity-60 flex items-center gap-2">
+										<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+										</svg>
+										{{ th.created_at|timesince }} ago
+									</div>
+								</div>
+								{% if th.privacy != 'public' %}
+								<div class="glass px-2 py-1 rounded-full text-xs">
+									<svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+									</svg>
+									{{ th.privacy|title }}
+								</div>
+								{% endif %}
+							</div>
+						</div>
+						<div class="prose prose-sm max-w-none">
+							<p class="text-[16px] leading-relaxed mb-4">{{ th.content }}</p>
+						</div>
+						{% if th.image %}
+						<div class="mb-4 rounded-2xl overflow-hidden shadow-lg">
+							<img src="{{ th.image.url }}" class="w-full h-auto object-cover" alt="image" />
+						</div>
+						{% endif %}
+						{% if th.link %}
+						<div class="mb-4 glass rounded-xl p-3">
+							<div class="flex items-center gap-2 mb-2">
+								<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 010 5.656l-1.414 1.414a4 4 0 01-5.656-5.656l1.414-1.414"/>
+								</svg>
+								<span class="text-sm font-medium">Link</span>
+							</div>
+							<a href="{{ th.link }}" class="text-sm opacity-80 hover:opacity-100 underline" target="_blank">{{ th.link }}</a>
+						</div>
+						{% endif %}
+						{% if th.tags.all %}
+						<div class="mb-4 flex flex-wrap gap-2">
+							{% for tag_item in th.tags.all %}
+							<span class="glass px-3 py-1 rounded-full text-sm font-medium" style="background: linear-gradient(135deg, var(--accent1), var(--accent2)); color: white;">#{{ tag_item.name }}</span>
+							{% endfor %}
+						</div>
+						{% endif %}
+						<div class="flex items-center gap-6 text-sm">
+							<button onclick="toggleLike({{ th.id }}, this)" class="like-btn flex items-center gap-2 hover:opacity-100 transition-all {% if request.user in th.likes.all %}text-red-500 liked{% endif %}">
+								<svg class="w-5 h-5" fill="{% if request.user in th.likes.all %}currentColor{% else %}none{% endif %}" stroke="currentColor" viewBox="0 0 24 24">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+								</svg>
+								<span class="like-count font-medium">{{ th.like_count }}</span>
+							</button>
+							<button onclick="toggleComments(this)" class="comment-btn flex items-center gap-2 hover:opacity-100 transition-all">
+								<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+								</svg>
+								<span class="font-medium">{{ th.comment_count }}</span>
+							</button>
+							<button onclick="toggleSave({{ th.id }}, this)" class="save-btn flex items-center gap-2 hover:opacity-100 transition-all {% if request.user in th.saves.all %}text-yellow-500 saved{% endif %}">
+								<svg class="w-5 h-5" fill="{% if request.user in th.saves.all %}currentColor{% else %}none{% endif %}" stroke="currentColor" viewBox="0 0 24 24">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
+								</svg>
+								<span class="font-medium">Save</span>
+							</button>
+						</div>
+						<div class="comments hidden mt-6" data-thread-id="{{ th.id }}">
+							<div class="border-t pt-4">
+								<h4 class="font-semibold mb-4 flex items-center gap-2">
+									<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+									</svg>
+									Comments ({{ th.comment_count }})
+								</h4>
+								<div class="space-y-4">
+									{% for c in th.comments.all %}
+									<div class="flex items-start gap-3">
+										<img src="{{ c.author.profile.profile_image.url }}" class="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm" />
+										<div class="flex-1">
+											<div class="glass rounded-2xl p-4">
+												<div class="flex items-center gap-2 mb-2">
+													<div class="font-semibold">{{ c.author.get_full_name|default:c.author.username }}</div>
+													<div class="text-xs opacity-60">· {{ c.created_at|timesince }} ago</div>
+												</div>
+												<div class="text-sm leading-relaxed">{{ c.content }}</div>
+											</div>
+										</div>
+									</div>
+									{% empty %}
+									<div class="text-center py-8 opacity-60">
+										<svg class="w-12 h-12 mx-auto mb-3 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+										</svg>
+										<div class="text-sm">No comments yet. Be the first to comment!</div>
+									</div>
+									{% endfor %}
+								</div>
+								<form onsubmit="submitComment(event, {{ th.id }})" class="mt-6">
+									{% csrf_token %}
+									<div class="flex items-start gap-3">
+										<img src="{{ request.user.profile.profile_image.url|default:'' }}" class="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm" />
+										<div class="flex-1">
+											<textarea name="content" rows="3" class="w-full glass rounded-2xl p-4 outline-none resize-none" placeholder="Write a thoughtful comment..."></textarea>
+											<input type="hidden" name="parent" value="">
+											<div class="mt-3 flex items-center justify-between">
+												<div class="text-xs opacity-60">Press Enter to submit</div>
+												<button type="submit" class="btn-brand text-white rounded-full px-4 py-2 text-sm font-medium">
+													<svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+														<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+													</svg>
+													Reply
+												</button>
+											</div>
+										</div>
+									</div>
+								</form>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			{% empty %}
+			<div class="glass rounded-2xl p-12 text-center">
+				<svg class="w-24 h-24 mx-auto mb-6 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h10M7 11h8M7 15h6"/>
+				</svg>
+				<h3 class="text-xl font-semibold mb-2">No threads with #{{ tag.name }}</h3>
+				<p class="text-sm opacity-60 mb-6">Be the first to create a thread with this tag!</p>
+				<a href="{% url 'threads' %}" class="btn-brand text-white rounded-full px-6 py-3 font-medium">
+					<svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+					</svg>
+					Create Thread
+				</a>
+			</div>
+			{% endfor %}
+		</div>
+
+		<!-- Pagination -->
+		{% if threads.has_other_pages %}
+		<div class="mt-8 flex justify-center">
+			<div class="glass rounded-full p-2 flex items-center gap-2">
+				{% if threads.has_previous %}
+				<a href="?page={{ threads.previous_page_number }}" class="glass rounded-full p-2 hover:opacity-80 transition-opacity">
+					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+					</svg>
+				</a>
+				{% endif %}
+				
+				<span class="px-4 text-sm font-medium">{{ threads.number }} of {{ threads.paginator.num_pages }}</span>
+				
+				{% if threads.has_next %}
+				<a href="?page={{ threads.next_page_number }}" class="glass rounded-full p-2 hover:opacity-80 transition-opacity">
+					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+					</svg>
+				</a>
+				{% endif %}
+			</div>
+		</div>
+		{% endif %}
+	</main>
+
+	<script>
+		// AJAX functions (same as threads.html)
+		async function toggleLike(threadId, button) {
+			try {
+				const response = await fetch(`/u/${threadId}/like-toggle/`, {
+					headers: { 'X-Requested-With': 'XMLHttpRequest' }
+				});
+				const data = await response.json();
+				if (data.ok) {
+					const countSpan = button.querySelector('.like-count');
+					const heartIcon = button.querySelector('svg');
+					countSpan.textContent = data.likes;
+					
+					if (button.classList.contains('text-red-500')) {
+						button.classList.remove('text-red-500', 'liked');
+						heartIcon.setAttribute('fill', 'none');
+					} else {
+						button.classList.add('text-red-500', 'liked');
+						heartIcon.setAttribute('fill', 'currentColor');
+					}
+				}
+			} catch (error) {
+				console.error('Error toggling like:', error);
+			}
+		}
+
+		async function toggleSave(threadId, button) {
+			try {
+				const response = await fetch(`/u/${threadId}/save-toggle/`, {
+					headers: { 'X-Requested-With': 'XMLHttpRequest' }
+				});
+				const data = await response.json();
+				if (data.ok) {
+					const bookmarkIcon = button.querySelector('svg');
+					
+					if (button.classList.contains('text-yellow-500')) {
+						button.classList.remove('text-yellow-500', 'saved');
+						bookmarkIcon.setAttribute('fill', 'none');
+					} else {
+						button.classList.add('text-yellow-500', 'saved');
+						bookmarkIcon.setAttribute('fill', 'currentColor');
+					}
+				}
+			} catch (error) {
+				console.error('Error toggling save:', error);
+			}
+		}
+
+		function toggleComments(button) {
+			const commentsDiv = button.closest('.glass').querySelector('.comments');
+			commentsDiv.classList.toggle('hidden');
+		}
+
+		async function submitComment(event, threadId) {
+			event.preventDefault();
+			const form = event.target;
+			const content = form.querySelector('textarea[name="content"]').value.trim();
+			if (!content) return;
+
+			try {
+				const response = await fetch(`/u/${threadId}/comment/`, {
+					method: 'POST',
+					headers: {
+						'X-Requested-With': 'XMLHttpRequest',
+						'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+					},
+					body: new FormData(form)
+				});
+				
+				if (response.ok) {
+					form.querySelector('textarea[name="content"]').value = '';
+					location.reload();
+				}
+			} catch (error) {
+				console.error('Error submitting comment:', error);
+			}
+		}
+	</script>
+</body>
+</html>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Following - {{ target_user.username }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .glassmorphism {
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body class="min-h-screen" style="background-color: #0f172a; color: #e2e8f0;">
+    <div class="max-w-6xl mx-auto p-6">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Main Content -->
+            <div class="lg:col-span-2">
+                <div class="glassmorphism rounded-2xl shadow-lg p-6 mb-6">
+                    <h1 class="text-3xl font-bold text-gray-200 mb-2">{{ target_user.username }} is following</h1>
+                    <p class="text-gray-400">{{ following_profiles.count }} following</p>
+                </div>
+                
+                <div class="glassmorphism rounded-2xl shadow-lg p-6">
+                    {% for profile in following_profiles %}
+                    <div class="py-4 flex items-center justify-between border-b border-gray-700 last:border-b-0">
+                        <div class="flex items-center gap-4">
+                            <img src="{{ profile.user.profile.profile_image.url }}" class="w-12 h-12 rounded-full object-cover border-2 border-indigo-500 shadow-md" alt="{{ profile.user.username }} avatar" />
+                            <div>
+                                <div class="font-semibold text-gray-200">{{ profile.user.get_full_name|default:profile.user.username }}</div>
+                                <div class="text-sm text-gray-400">@{{ profile.user.username }}</div>
+                                {% if profile.user.profile.bio %}
+                                <div class="text-sm text-gray-300 mt-1">{{ profile.user.profile.bio|truncatechars:50 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% if request.user != profile.user %}
+                        <a href="{% url 'follow_toggle' profile.user.id %}" class="px-4 py-2 rounded-full border-2 text-indigo-300 border-indigo-400 hover:bg-indigo-900/30 hover:border-indigo-300 transition-all">
+                            {% if request.user in profile.followers.all %}Unfollow{% else %}Follow{% endif %}
+                        </a>
+                        {% endif %}
+                    </div>
+                    {% empty %}
+                    <div class="py-12 text-center text-gray-400">
+                        <div class="text-6xl mb-4">👀</div>
+                        <div class="text-xl font-medium">Not following anyone yet</div>
+                        <div class="text-sm mt-2">When {{ target_user.username }} follows people, they'll appear here</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Suggestions Sidebar -->
+            <div class="lg:col-span-1">
+                <div class="glassmorphism rounded-2xl shadow-lg p-6 sticky top-6">
+                    <h2 class="text-xl font-bold text-gray-200 mb-4">Suggested Users</h2>
+                    <div class="space-y-4">
+                        {% for user in suggested_users %}
+                        <div class="flex items-center justify-between p-3 rounded-xl bg-indigo-900/30 hover:bg-indigo-900/50 transition-all">
+                            <div class="flex items-center gap-3">
+                                <img src="{{ user.profile.profile_image.url }}" class="w-10 h-10 rounded-full object-cover" alt="{{ user.username }} avatar" />
+                                <div>
+                                    <div class="font-medium text-gray-200">{{ user.get_full_name|default:user.username }}</div>
+                                    <div class="text-sm text-gray-400">@{{ user.username }}</div>
+                                </div>
+                            </div>
+                            <a href="{% url 'follow_toggle' user.id %}" class="px-3 py-1 rounded-full text-sm border border-indigo-400 text-indigo-300 hover:bg-indigo-900/50 transition-all">
+                                Follow
+                            </a>
+                        </div>
+                        {% empty %}
+                        <div class="text-center text-gray-400 py-4">
+                            <div class="text-2xl mb-2">✨</div>
+                            <div class="text-sm">No suggestions available</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="mt-6 pt-4 border-t border-gray-700">
+                        <a href="{% url 'user_suggestions' %}" class="block text-center text-indigo-400 hover:text-indigo-300 font-medium">
+                            View More Suggestions
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
+
